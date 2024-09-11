@@ -56,6 +56,8 @@ Temporary Items
 poetry.lock
 __pycache__
 .env
+layers/
+.aws-sam/
 
 
 # Sensitive or high-churn files:
