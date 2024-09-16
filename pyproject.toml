@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dragons"
+name = "dragons-sam-app"
 version = "0.1.0"
 description = ""
 authors = ["Rauan Kassymkhanov <rauan.kassymkhanov@nixs.com>"]
@@ -7,19 +7,27 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-boto3 = "^1.35.13"
 aws-lambda-powertools = "^2.43.1"
 requests = "^2.32.3"
+boto3 = "^1.35.16"
+pydantic = "^2.9.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.4"
 pre-commit = "^3.8.0"
 pytest = "^8.3.2"
+moto = "^5.0.14"
+factory-boy = "^3.3.1"
+polyfactory = "^2.16.2"
 
 [tool.ruff]
 line-length = 120
 lint.select = ["E", "W", "F", "T201"]
 lint.extend-select = ["W292"]
+
+[tool.ruff.lint.per-file-ignores]
+"layers/*" = ["E", "W", "F", "T201", "W292"]
+".aws-sam/*" = ["E", "W", "F", "T201", "W292"]
 
 [tool.ruff.format]
 quote-style = "double"

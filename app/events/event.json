@@ -1,0 +1,5 @@
+{
+  "body": "{\"name\": \"Vizerion\", \"breed\": \"T-Rex\", \"danger_rating\": 10, \"description\": \"GOT Dragon\"}",
+  "httpMethod": "POST",
+  "path": "/dragons"
+}
