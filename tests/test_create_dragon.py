@@ -1,7 +1,7 @@
 import json
-from lambda_handler.create_dragon import lambda_handler
+from create_dragon.create_dragon import lambda_handler
 import pytest
-from lambda_handler.exceptions import InvalidInputError
+from create_dragon.exceptions import InvalidInputError
 from tests.conftest import dynamodb_mock
 
 

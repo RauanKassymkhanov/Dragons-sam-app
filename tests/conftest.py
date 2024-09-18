@@ -3,12 +3,11 @@ from contextlib import contextmanager
 from unittest.mock import Mock
 import boto3
 import pytest
-from aws_lambda_powertools.utilities.parser.models import APIGatewayProxyEventModel
+from aws_lambda_powertools.utilities.parser.models import APIGatewayProxyEventModel, DynamoDBStreamModel
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from moto import mock_aws
 from moto.dynamodb.models import Table
-
-from tests.factory_schemas import APIGatewayEventFactory, APIGatewayInvalidEventFactory
+from tests.factory_schemas import APIGatewayEventFactory, APIGatewayInvalidEventFactory, DynamodbStreamEventFactory
 
 
 def pytest_configure(config: pytest.Config):
@@ -17,8 +16,9 @@ def pytest_configure(config: pytest.Config):
     It configures the environment variables for testing.
     """
     os.environ["ENVIRONMENT"] = "test"
-    os.environ["AWS_REGION"] = "us-east-1"
+    os.environ["AWS_REGION_NAME"] = "us-east-1"
     os.environ["TABLE_NAME"] = "dragons-test-db"
+    os.environ["SQS_QUEUE_URL"] = "https://sqs.us-east-1.amazonaws.com/123456789012/sqs"
 
 
 @pytest.fixture()
@@ -32,6 +32,13 @@ def apigw_event_invalid() -> APIGatewayProxyEventModel:
     dragon_data = APIGatewayInvalidEventFactory.build()
 
     return dragon_data
+
+
+@pytest.fixture()
+def dynamodb_stream_event() -> DynamoDBStreamModel:
+    event_data = DynamodbStreamEventFactory.build()
+
+    return event_data
 
 
 @contextmanager
