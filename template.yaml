@@ -3,12 +3,15 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Dragons-sam-app
 
-  SAM Template for creating dragons via Lambda function, DynamoDB, and Lambda Layer.
+  SAM Template for creating dragons 
 
 Globals:
   Function:
     Timeout: 3
     MemorySize: 128
+    Runtime: python3.11
+    Layers:
+      - !Ref DragonsAppDependencyLayer
 
 Parameters:
   Environment:
@@ -19,7 +22,7 @@ Parameters:
       - prod
 
 Resources:
-  MyLayer:
+  DragonsAppDependencyLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
       LayerName: "DependencyLayer"
@@ -33,11 +36,9 @@ Resources:
   CreateDragonFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: app/
-      Handler: lambda_handler.create_dragon.lambda_handler
-      Runtime: python3.11
-      Layers:
-        - !Ref MyLayer
+      FunctionName: !Sub "CreateDragonFunction-${Environment}"
+      CodeUri: create_dragon/
+      Handler: create_dragon.lambda_handler
       Policies:
         - Statement:
             Effect: Allow
@@ -47,7 +48,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref DragonsTable
-          REGION: !Ref AWS::Region
+          AWS_REGION_NAME: !Ref AWS::Region
           ENV: !Ref Environment
       Events:
         CreateDragonApi:
@@ -55,6 +56,49 @@ Resources:
           Properties:
             Path: /dragons
             Method: post
+
+  StreamHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "StreamHandlerFunction-${Environment}"
+      CodeUri: stream_handler/
+      Handler: stream_handler.lambda_handler
+      Events:
+        DDBEvent:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              !GetAtt DragonsTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 1
+            Enabled: true
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref DragonEventsQueue
+          AWS_REGION_NAME: !Ref AWS::Region
+      Policies:
+        - DynamoDBStreamReadPolicy:
+            TableName: !Ref DragonsTable
+            StreamName: !GetAtt DragonsTable.StreamArn
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt DragonEventsQueue.QueueName
+
+  DragonEventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "dragon-events-queue-${Environment}.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DragonEventsDLQ.Arn
+        maxReceiveCount: 5
+
+  DragonEventsDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "dragon-events-dlq-${Environment}.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: true
 
   DragonsTable:
     Type: AWS::DynamoDB::Table
@@ -69,17 +113,16 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
 
 Outputs:
   CreateDragonFunction:
     Description: "Lambda Function ARN for creating dragons"
     Value: !GetAtt CreateDragonFunction.Arn
-  CreateDragonFunctionIamRole:
-    Description: "Implicit IAM Role created for Create Dragon function"
-    Value: !GetAtt CreateDragonFunctionRole.Arn
   DragonsTableName:
     Description: "DynamoDB Table for storing dragons"
     Value: !Ref DragonsTable
   MyLayerVersion:
     Description: "Lambda Layer for shared dependencies"
-    Value: !Ref MyLayer
+    Value: !Ref DragonsAppDependencyLayer

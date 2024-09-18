@@ -1,4 +1,3 @@
-import os
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.parser import event_parser
 from aws_lambda_powertools.utilities.parser.models import APIGatewayProxyEventModel
@@ -7,13 +6,13 @@ from pydantic import ValidationError
 import boto3
 import uuid
 from datetime import datetime
-from lambda_handler.exceptions import InvalidInputError
-from lambda_handler.schemas import DragonRequestModel, DragonResponseModel
+from config import settings
+from exceptions import InvalidInputError
+from schemas import DragonRequestModel, DragonResponseModel
 
 logger = Logger(service="dragon_service")
-
-dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
-table = dynamodb.Table(os.environ.get("TABLE_NAME", "dragons-dev"))
+dynamodb = boto3.resource("dynamodb", region_name=settings.AWS_REGION_NAME)
+table = dynamodb.Table(settings.TABLE_NAME)
 
 
 def create_dragon_in_db(dragon_data: DragonRequestModel) -> None:
