@@ -83,6 +83,36 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt DragonEventsQueue.QueueName
 
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: send-message-to-sqs
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt DailyReportQueue.Arn
+
+  DailyReportScheduler:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: DailyReportScheduler
+      ScheduleExpression: cron(0 0 * * ? *)
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      Target:
+        Arn: !GetAtt DailyReportQueue.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"task": "daily_report_trigger"}'
+
   DragonEventsQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -99,6 +129,19 @@ Resources:
       QueueName: !Sub "dragon-events-dlq-${Environment}.fifo"
       FifoQueue: true
       ContentBasedDeduplication: true
+
+  DailyReportQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "daily-report-queue-${Environment}"
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DailyReportDLQ.Arn
+        maxReceiveCount: 5
+
+  DailyReportDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "daily-report-dlq-${Environment}"
 
   DragonsTable:
     Type: AWS::DynamoDB::Table
