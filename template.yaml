@@ -159,6 +159,12 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 
+  DailyReportBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "daily-report-bucket-${Environment}"
+
 Outputs:
   CreateDragonFunction:
     Description: "Lambda Function ARN for creating dragons"
