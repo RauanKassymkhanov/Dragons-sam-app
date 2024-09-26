@@ -22,6 +22,40 @@ Parameters:
       - prod
 
 Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "user-pool-${Environment}"
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  DragonsApi:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "dragons-api-${Environment}"
+      StageName: DragonsAPI
+      Cors: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+
   DragonsAppDependencyLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -51,11 +85,14 @@ Resources:
           AWS_REGION_NAME: !Ref AWS::Region
           ENV: !Ref Environment
       Events:
-        CreateDragonApi:
+        Dragons:
           Type: Api
           Properties:
             Path: /dragons
             Method: post
+            RestApiId: !Ref DragonsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   StreamHandlerFunction:
     Type: AWS::Serverless::Function
