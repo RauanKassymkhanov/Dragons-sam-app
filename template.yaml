@@ -94,6 +94,30 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  GetDragonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "GetDragonsFunction-${Environment}"
+      CodeUri: get_dragons/
+      Handler: get_dragons.lambda_handler
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:Scan
+            Resource: !GetAtt DragonsTable.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DragonsTable
+          AWS_REGION_NAME: !Ref AWS::Region
+          ENV: !Ref Environment
+      Events:
+        Dragons:
+          Type: Api
+          Properties:
+            Path: /dragons
+            Method: get
+
   StreamHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:

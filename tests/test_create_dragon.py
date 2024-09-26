@@ -5,7 +5,7 @@ from create_dragon.exceptions import InvalidInputError
 from tests.conftest import dynamodb_mock
 
 
-def test_lambda_handler(apigw_event, lambda_context) -> None:
+def test_create_dragon(apigw_event, lambda_context) -> None:
     with dynamodb_mock():
         request = lambda_handler(apigw_event, lambda_context)
         expected_data = json.loads(apigw_event.body)
@@ -19,7 +19,7 @@ def test_lambda_handler(apigw_event, lambda_context) -> None:
         assert response_data == expected_data
 
 
-def test_lambda_handler_invalid_input(apigw_event_invalid, lambda_context) -> None:
+def test_create_dragon_invalid_input(apigw_event_invalid, lambda_context) -> None:
     with dynamodb_mock():
         with pytest.raises(InvalidInputError) as exc_info:
             lambda_handler(apigw_event_invalid, lambda_context)
