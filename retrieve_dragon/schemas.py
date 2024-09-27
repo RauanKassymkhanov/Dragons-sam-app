@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class GetDragonsResponseModel(BaseModel):
+class GetDragonResponseModel(BaseModel):
     dragon_id: str
     name: str
     breed: str

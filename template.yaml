@@ -117,6 +117,32 @@ Resources:
           Properties:
             Path: /dragons
             Method: get
+            RestApiId: !Ref DragonsApi
+
+  RetrieveDragonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "RetrieveDragonFunction-${Environment}"
+      CodeUri: retrieve_dragon/
+      Handler: retrieve_dragon.lambda_handler
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:GetItem
+            Resource: !GetAtt DragonsTable.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DragonsTable
+          AWS_REGION_NAME: !Ref AWS::Region
+          ENV: !Ref Environment
+      Events:
+        Dragons:
+          Type: Api
+          Properties:
+            Path: /dragons/{dragon_id}
+            Method: get
+            RestApiId: !Ref DragonsApi
 
   StreamHandlerFunction:
     Type: AWS::Serverless::Function

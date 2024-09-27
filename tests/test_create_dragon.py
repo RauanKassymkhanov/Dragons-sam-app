@@ -1,7 +1,5 @@
 import json
 from create_dragon.create_dragon import lambda_handler
-import pytest
-from create_dragon.exceptions import InvalidInputError
 from tests.conftest import dynamodb_mock
 
 
@@ -21,7 +19,6 @@ def test_create_dragon(apigw_event, lambda_context) -> None:
 
 def test_create_dragon_invalid_input(apigw_event_invalid, lambda_context) -> None:
     with dynamodb_mock():
-        with pytest.raises(InvalidInputError) as exc_info:
-            lambda_handler(apigw_event_invalid, lambda_context)
+        request = lambda_handler(apigw_event_invalid, lambda_context)
 
-        assert "Invalid input" in str(exc_info.value)
+        assert request["statusCode"] == 400

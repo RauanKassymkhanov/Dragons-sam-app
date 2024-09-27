@@ -9,7 +9,8 @@ class DragonRequestModel(BaseModel):
 
 
 class DragonResponseModel(DragonRequestModel):
-    pass
+    dragon_id: str
+    created_at: str
 
 
 class DragonInvalidRequestModel(BaseModel):
