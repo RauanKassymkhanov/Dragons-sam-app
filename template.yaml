@@ -61,7 +61,7 @@ Resources:
     Properties:
       LayerName: "DependencyLayer"
       Description: "Layer shared dependencies"
-      ContentUri: .
+      ContentUri: shared_layer
       CompatibleRuntimes:
         - python3.11
     Metadata:
@@ -143,6 +143,34 @@ Resources:
             Path: /dragons/{dragon_id}
             Method: get
             RestApiId: !Ref DragonsApi
+
+  UpdateDragonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "UpdateDragonFunction-${Environment}"
+      CodeUri: update_dragon/
+      Handler: update_dragon.lambda_handler
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+            Resource: !GetAtt DragonsTable.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DragonsTable
+          AWS_REGION_NAME: !Ref AWS::Region
+          ENV: !Ref Environment
+      Events:
+        Dragons:
+          Type: Api
+          Properties:
+            Path: /dragons/{dragon_id}
+            Method: put
+            RestApiId: !Ref DragonsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   StreamHandlerFunction:
     Type: AWS::Serverless::Function

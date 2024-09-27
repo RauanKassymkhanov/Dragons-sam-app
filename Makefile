@@ -1,10 +1,5 @@
 
-.PHONY: install lint docker-up docker-down sam-build build-DragonsAppDependencyLayer
-
-build-DragonsAppDependencyLayer:
-	mkdir -p "$(ARTIFACTS_DIR)/python"
-	poetry export -f requirements.txt --output "$(ARTIFACTS_DIR)/requirements.txt" --without-hashes
-	pip install -r "$(ARTIFACTS_DIR)/requirements.txt" -t "$(ARTIFACTS_DIR)/python"
+.PHONY: install lint docker-up docker-down sam-build
 
 install:
 	poetry install
