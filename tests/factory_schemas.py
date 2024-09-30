@@ -6,7 +6,7 @@ from aws_lambda_powertools.utilities.parser.models import (
 )
 from polyfactory.factories.pydantic_factory import ModelFactory
 
-from create_dragon.schemas import DragonRequestModel, DragonInvalidRequestModel
+from shared_layer.schemas import DragonRequestModel, DragonInvalidRequestModel
 
 
 class DragonBodyCreateFactory(ModelFactory[DragonRequestModel]):
