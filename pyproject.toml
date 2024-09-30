@@ -34,7 +34,7 @@ lint.extend-select = ["W292"]
 quote-style = "double"
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
+pythonpath = ["./shared_layer"]
 
 [build-system]
 requires = ["poetry-core"]

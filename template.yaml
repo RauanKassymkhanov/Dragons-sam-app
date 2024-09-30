@@ -172,6 +172,34 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  DeleteDragonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "DeleteDragonFunction-${Environment}"
+      CodeUri: delete_dragon/
+      Handler: delete_dragon.lambda_handler
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:DeleteItem
+            Resource: !GetAtt DragonsTable.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DragonsTable
+          AWS_REGION_NAME: !Ref AWS::Region
+          ENV: !Ref Environment
+      Events:
+        Dragons:
+          Type: Api
+          Properties:
+            Path: /dragons/{dragon_id}
+            Method: delete
+            RestApiId: !Ref DragonsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   StreamHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:

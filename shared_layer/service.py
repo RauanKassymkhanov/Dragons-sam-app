@@ -47,3 +47,8 @@ def update_dragon_in_db(dragon_id: str, dragon_data: DragonRequestModel) -> Drag
     table.put_item(Item=updated_dragon)
 
     return DragonResponseModel(**updated_dragon)
+
+
+def delete_dragon_from_db(dragon_id: str) -> None:
+    get_dragon_by_id_from_db(dragon_id)
+    table.delete_item(Key={"dragon_id": dragon_id})
