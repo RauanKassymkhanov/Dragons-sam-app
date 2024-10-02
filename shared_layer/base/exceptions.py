@@ -20,3 +20,13 @@ class DatabaseError(ApplicationError):
 class NotFoundError(ApplicationError):
     def __init__(self, item: str):
         super().__init__(f"{item} not found", 404)
+
+
+class ForbiddenError(ApplicationError):
+    def __init__(self, message: str = "You are not authorized to perform this action."):
+        super().__init__(message, 403)
+
+
+class UnauthorizedError(ApplicationError):
+    def __init__(self, message: str = "Unauthorized"):
+        super().__init__(message, 401)

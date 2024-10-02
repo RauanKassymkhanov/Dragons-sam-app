@@ -72,7 +72,7 @@ Resources:
     Properties:
       FunctionName: !Sub "CreateDragonFunction-${Environment}"
       CodeUri: create_dragon/
-      Handler: create_dragon.lambda_handler
+      Handler: app.create_dragon.lambda_handler
       Policies:
         - Statement:
             Effect: Allow
@@ -99,7 +99,7 @@ Resources:
     Properties:
       FunctionName: !Sub "GetDragonsFunction-${Environment}"
       CodeUri: get_dragons/
-      Handler: get_dragons.lambda_handler
+      Handler: app.get_dragons.lambda_handler
       Policies:
         - Statement:
             Effect: Allow
@@ -124,7 +124,7 @@ Resources:
     Properties:
       FunctionName: !Sub "RetrieveDragonFunction-${Environment}"
       CodeUri: retrieve_dragon/
-      Handler: retrieve_dragon.lambda_handler
+      Handler: app.retrieve_dragon.lambda_handler
       Policies:
         - Statement:
             Effect: Allow
@@ -149,13 +149,13 @@ Resources:
     Properties:
       FunctionName: !Sub "UpdateDragonFunction-${Environment}"
       CodeUri: update_dragon/
-      Handler: update_dragon.lambda_handler
+      Handler: app.update_dragon.lambda_handler
       Policies:
         - Statement:
             Effect: Allow
             Action:
               - dynamodb:GetItem
-              - dynamodb:PutItem
+              - dynamodb:UpdateItem
             Resource: !GetAtt DragonsTable.Arn
       Environment:
         Variables:
@@ -177,7 +177,7 @@ Resources:
     Properties:
       FunctionName: !Sub "DeleteDragonFunction-${Environment}"
       CodeUri: delete_dragon/
-      Handler: delete_dragon.lambda_handler
+      Handler: app.delete_dragon.lambda_handler
       Policies:
         - Statement:
             Effect: Allow
@@ -205,7 +205,7 @@ Resources:
     Properties:
       FunctionName: !Sub "StreamHandlerFunction-${Environment}"
       CodeUri: stream_handler/
-      Handler: stream_handler.lambda_handler
+      Handler: app.stream_handler.lambda_handler
       Events:
         DDBEvent:
           Type: DynamoDB
@@ -219,6 +219,7 @@ Resources:
         Variables:
           SQS_QUEUE_URL: !Ref DragonEventsQueue
           AWS_REGION_NAME: !Ref AWS::Region
+          ENV: !Ref Environment
       Policies:
         - DynamoDBStreamReadPolicy:
             TableName: !Ref DragonsTable
@@ -296,9 +297,7 @@ Resources:
       KeySchema:
         - AttributeName: dragon_id
           KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 

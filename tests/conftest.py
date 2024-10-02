@@ -24,6 +24,7 @@ def pytest_configure(config: pytest.Config):
 @pytest.fixture()
 def apigw_event() -> APIGatewayProxyEventModel:
     dragon_data = APIGatewayEventFactory.build()
+
     return dragon_data
 
 
