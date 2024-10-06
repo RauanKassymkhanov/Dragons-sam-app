@@ -1,5 +1,5 @@
 import json
-from create_dragon.create_dragon import lambda_handler
+from create_dragon.app.create_dragon import lambda_handler
 from tests.conftest import dynamodb_mock
 
 
@@ -20,6 +20,7 @@ def test_create_dragon(apigw_event, lambda_context) -> None:
 
         dragon_id = response_dragon["dragon_id"]
         dragon_from_db = table.get_item(Key={"dragon_id": dragon_id})
+        del dragon_from_db["Item"]["owner_id"]
         assert response_dragon == dragon_from_db["Item"]
 
 
@@ -28,3 +29,9 @@ def test_create_dragon_invalid_input(apigw_event_invalid, lambda_context) -> Non
         request = lambda_handler(apigw_event_invalid, lambda_context)
 
         assert request["statusCode"] == 400
+
+def test_create_dragon_unauthorized(apigw_event, lambda_context) -> None:
+    with dynamodb_mock():
+        del apigw_event.requestContext.authorizer.claims["sub"]
+        response = lambda_handler(apigw_event, lambda_context)
+        assert response["statusCode"] == 401

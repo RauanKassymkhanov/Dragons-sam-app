@@ -6,7 +6,7 @@ from aws_lambda_powertools.utilities.parser.models import (
 )
 from polyfactory.factories.pydantic_factory import ModelFactory
 
-from shared_layer.schemas import DragonRequestModel, DragonInvalidRequestModel
+from shared_layer.base.schemas import DragonRequestModel, DragonInvalidRequestModel
 
 
 class DragonBodyCreateFactory(ModelFactory[DragonRequestModel]):
@@ -22,7 +22,7 @@ class APIGatewayEventFactory(ModelFactory[APIGatewayProxyEventModel]):
 
     @classmethod
     def process_kwargs(cls, **kwargs) -> dict:
-        kwargs["requestContext"] = {"messageId": None}
+        kwargs["requestContext"] = {"messageId": None, "authorizer": {"claims": {"sub": "test-owner-id"}}}
         return super().process_kwargs(**kwargs)
 
     @classmethod
@@ -36,7 +36,7 @@ class APIGatewayInvalidEventFactory(ModelFactory[APIGatewayProxyEventModel]):
 
     @classmethod
     def process_kwargs(cls, **kwargs) -> dict:
-        kwargs["requestContext"] = {"messageId": None}
+        kwargs["requestContext"] = {"messageId": None, "authorizer": {"claims": {"sub": "test-owner-id"}}}
         return super().process_kwargs(**kwargs)
 
     @classmethod

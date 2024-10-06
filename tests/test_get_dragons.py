@@ -1,16 +1,18 @@
 import json
-from create_dragon.create_dragon import lambda_handler as create_dragon
-from get_dragons.get_dragons import lambda_handler as get_dragons
 from tests.conftest import dynamodb_mock
 from tests.factory_schemas import APIGatewayEventFactory
+from get_dragons.app.get_dragons import lambda_handler as get_dragons
+from tests.utils import create_dragon_for_test
 
 
 def test_get_dragons(apigw_event, lambda_context) -> None:
     with dynamodb_mock() as (table, created_dragon_ids):
-        create_dragon(apigw_event, lambda_context)
+        owner_id = apigw_event.requestContext.authorizer.claims["sub"]
+        create_dragon_for_test(apigw_event, owner_id)
 
         apigw_event_2 = APIGatewayEventFactory.build()
-        create_dragon(apigw_event_2, lambda_context)
+        owner_id = apigw_event_2.requestContext.authorizer.claims["sub"]
+        create_dragon_for_test(apigw_event_2, owner_id)
 
         response = get_dragons(apigw_event, lambda_context)
         response_dragons = json.loads(response["body"])
@@ -35,4 +37,6 @@ def test_get_dragons(apigw_event, lambda_context) -> None:
         assert expected_data_sorted == response_data_sorted
 
         dragons_from_db = table.scan().get("Items", [])
+        for item in dragons_from_db:
+            item.pop("owner_id", None)
         assert dragons_from_db == response_dragons
